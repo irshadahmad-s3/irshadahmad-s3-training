@@ -2,4 +2,4 @@
 
 Project: Student Management System
 
-Status: In Progress
+Status: Completed
