@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Task Tracker | Manage Your Tasks</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <header class="header">
+            <div class="logo">✓</div>
+            <h1>Task Tracker</h1>
+            <p>Manage your tasks, stay productive.</p>
+        </header>
+
+        <main class="main-content">
+
+            <form id="todo-form">
+
+                <div class="form-row">
+
+                    <input
+                        type="text"
+                        id="task-title"
+                        placeholder="Enter your task..."
+                        required
+                    >
+
+                    <input
+                        type="date"
+                        id="due-date"
+                    >
+
+                    <button type="submit" class="add-btn">
+                        + Add Task
+                    </button>
+
+                </div>
+
+                <textarea
+                    id="task-notes"
+                    placeholder="Add task notes (optional)..."
+                    rows="2"
+                ></textarea>
+
+                <input
+                    type="text"
+                    id="task-owner"
+                    placeholder="Task owner (optional)"
+                >
+
+            </form>
+
+
+            <!-- Task Filters -->
+
+            <div class="filters">
+
+                <button
+                    class="filter-btn active"
+                    data-filter="all"
+                    type="button"
+                >
+                    All
+                </button>
+
+                <button
+                    class="filter-btn"
+                    data-filter="pending"
+                    type="button"
+                >
+                    Pending
+                </button>
+
+                <button
+                    class="filter-btn"
+                    data-filter="completed"
+                    type="button"
+                >
+                    Completed
+                </button>
+
+            </div>
+
+
+            <!-- Task List -->
+
+            <ul id="task-list"></ul>
+
+
+            <!-- Empty Message -->
+
+            <div id="empty-message" class="empty-message">
+                No tasks yet. Add your first task!
+            </div>
+
+        </main>
+
+
+        <!-- Footer -->
+
+        <footer class="footer">
+
+            <div class="stats">
+
+                <span id="total-count">0 Tasks</span>
+
+                <span id="completed-count">0 Completed</span>
+
+                <span id="pending-count">0 Pending</span>
+
+            </div>
+
+            <button
+                id="clear-completed"
+                class="clear-btn"
+                type="button"
+            >
+                Clear Completed
+            </button>
+
+        </footer>
+
+    </div>
+
+
+    <!-- Compiled TypeScript JavaScript -->
+
+    <script src="./dist/script.js"></script>
+
+</body>
+
+</html>
