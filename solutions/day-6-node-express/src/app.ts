@@ -1,5 +1,6 @@
 import express from "express";
 import taskRoutes from "./routes/task.routes";
+import errorMiddleware from "./middleware/error.middleware";
 
 const app = express();
 
@@ -25,4 +26,5 @@ app.get("/hello", (req, res) => {
     });
 });
 
+app.use(errorMiddleware);
 export default app;
