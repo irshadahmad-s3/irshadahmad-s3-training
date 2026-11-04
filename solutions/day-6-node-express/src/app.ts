@@ -1,0 +1,28 @@
+import express from "express";
+import taskRoutes from "./routes/task.routes";
+
+const app = express();
+
+// Middleware
+app.use(express.json());
+
+// Task Routes
+app.use("/tasks", taskRoutes);
+
+// GET /health
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "OK"
+    });
+});
+
+// GET /hello?name=Irshad
+app.get("/hello", (req, res) => {
+    const name = req.query.name || "Guest";
+
+    res.status(200).json({
+        message: `Hello ${name}`
+    });
+});
+
+export default app;
