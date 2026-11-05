@@ -1,11 +1,16 @@
 import express from "express";
 import taskRoutes from "./routes/task.routes";
 import errorMiddleware from "./middleware/error.middleware";
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./config/swagger";
 
 const app = express();
 
 // Middleware
 app.use(express.json());
+
+// API Documentation
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Task Routes
 app.use("/tasks", taskRoutes);
