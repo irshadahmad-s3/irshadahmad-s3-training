@@ -5,28 +5,28 @@ const { pool } = require('./db');
 const columns = 'id::int AS id, title, notes, status, due_date AS "dueDate", owner';
 async function createTask(task) {
   const { rows } = await pool.query(
-    `INSERT INTO tasks (title, notes, status, due_date, owner) VALUES ($1, $2, $3, $4, $5) RETURNING ${columns}`,
-    [task.title, task.notes, task.status, task.dueDate, task.owner],
+    `INSERT INTO tasks (title, notes, status, due_date, owner, user_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING ${columns}`,
+    [task.title, task.notes, task.status, task.dueDate, task.owner, task.userId],
   );
   return rows[0];
 }
-async function getAllTasks() {
-  const { rows } = await pool.query(`SELECT ${columns} FROM tasks ORDER BY id`);
+async function getAllTasks(user) {
+  const { rows } = await pool.query(`SELECT ${columns} FROM tasks WHERE ($1 = 'admin' OR user_id = $2) ORDER BY id`, [user.role, user.id]);
   return rows;
 }
-async function getTaskById(id) {
-  const { rows } = await pool.query(`SELECT ${columns} FROM tasks WHERE id = $1`, [id]);
+async function getTaskById(id, user) {
+  const { rows } = await pool.query(`SELECT ${columns} FROM tasks WHERE id = $1 AND ($2 = 'admin' OR user_id = $3)`, [id, user.role, user.id]);
   return rows[0];
 }
-async function updateTask(id, task) {
+async function updateTask(id, task, user) {
   const { rows } = await pool.query(
-    `UPDATE tasks SET title=$1, notes=$2, status=$3, due_date=$4, owner=$5, updated_at=now() WHERE id=$6 RETURNING ${columns}`,
-    [task.title, task.notes, task.status, task.dueDate, task.owner, id],
+    `UPDATE tasks SET title=$1, notes=$2, status=$3, due_date=$4, owner=$5, updated_at=now() WHERE id=$6 AND ($7 = 'admin' OR user_id=$8) RETURNING ${columns}`,
+    [task.title, task.notes, task.status, task.dueDate, task.owner, id, user.role, user.id],
   );
   return rows[0];
 }
-async function deleteTask(id) {
-  const { rowCount } = await pool.query('DELETE FROM tasks WHERE id = $1', [id]);
+async function deleteTask(id, user) {
+  const { rowCount } = await pool.query("DELETE FROM tasks WHERE id = $1 AND ($2 = 'admin' OR user_id=$3)", [id, user.role, user.id]);
   return rowCount > 0;
 }
 module.exports = { createTask, getAllTasks, getTaskById, updateTask, deleteTask };

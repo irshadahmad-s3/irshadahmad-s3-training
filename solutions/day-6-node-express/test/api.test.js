@@ -19,3 +19,13 @@ test('hello endpoint uses Guest when name is omitted', async () => {
     assert.deepEqual(await response.json(), { message: 'Hello Guest' });
   } finally { await new Promise((resolve) => server.close(resolve)); }
 });
+
+test('Swagger documentation remains available', async () => {
+  const server = app.listen(0);
+  try {
+    const response = await fetch(`http://127.0.0.1:${server.address().port}/api-docs/`);
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get('content-type'), /text\/html/);
+    assert.match(await response.text(), /swagger-ui/);
+  } finally { await new Promise((resolve) => server.close(resolve)); }
+});

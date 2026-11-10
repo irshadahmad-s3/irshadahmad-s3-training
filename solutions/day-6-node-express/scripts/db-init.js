@@ -6,6 +6,8 @@ const { pool } = require('../src/db');
   try {
     const sql = await fs.readFile(path.join(__dirname, '../db/schema.sql'), 'utf8');
     await pool.query(sql);
+    const authMigration = await fs.readFile(path.join(__dirname, '../db/migrations/001_auth_and_task_ownership.sql'), 'utf8');
+    await pool.query(authMigration);
     console.log('Database schema initialized.');
   } catch (error) { console.error(`Database initialization failed: ${error.message}`); process.exitCode = 1; }
   finally { await pool.end(); }

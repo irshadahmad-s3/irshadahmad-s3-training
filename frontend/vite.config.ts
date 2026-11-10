@@ -10,6 +10,11 @@ export default defineConfig({
         changeOrigin: true,
         bypass: (request) => request.headers.accept?.includes('text/html') ? request.url : undefined,
       },
+      '/auth': 'http://localhost:3000',
+      '/admin': 'http://localhost:3000',
+      '/notes': 'http://localhost:3000',
+      '/api-docs': 'http://localhost:3000',
+      '/health': 'http://localhost:3000',
     },
   },
 });

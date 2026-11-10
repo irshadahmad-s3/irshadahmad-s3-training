@@ -1,7 +1,7 @@
 import axios from 'axios';
+import { api } from './api';
 import type { Task, TaskInput } from '../types/Task';
 
-const api = axios.create({ baseURL: import.meta.env.VITE_API_BASE_URL || '', headers: { 'Content-Type': 'application/json' } });
 interface ApiResponse<T> { message: string; data: T }
 
 export function getTasks(): Promise<Task[]> {

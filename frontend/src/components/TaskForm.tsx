@@ -2,15 +2,17 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Button } from './Button';
 import { Input } from './Input';
 import type { Task, TaskInput, TaskStatus } from '../types/Task';
+import { useAuth } from '../context/AuthContext';
 
 interface TaskFormProps { task?: Task; onSubmit: (task: TaskInput) => Promise<void>; onCancel: () => void; submitLabel?: string }
 const blank: TaskInput = { title: '', notes: '', status: 'pending', dueDate: '', owner: '' };
 
 export function TaskForm({ task, onSubmit, onCancel, submitLabel = 'Create task' }: TaskFormProps) {
-  const [form, setForm] = useState<TaskInput>(task ? { title: task.title, notes: task.notes, status: task.status, dueDate: task.dueDate.slice(0, 10), owner: task.owner } : blank);
+  const { user } = useAuth();
+  const [form, setForm] = useState<TaskInput>(task ? { title: task.title, notes: task.notes, status: task.status, dueDate: task.dueDate.slice(0, 10), owner: task.owner } : { ...blank, owner: user?.email ?? '' });
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  useEffect(() => { setForm(task ? { title: task.title, notes: task.notes, status: task.status, dueDate: task.dueDate.slice(0, 10), owner: task.owner } : blank); }, [task]);
+  useEffect(() => { setForm(task ? { title: task.title, notes: task.notes, status: task.status, dueDate: task.dueDate.slice(0, 10), owner: task.owner } : { ...blank, owner: user?.email ?? '' }); }, [task, user?.email]);
   const update = (name: keyof TaskInput, value: string) => setForm((current) => ({ ...current, [name]: value }));
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setError(''); setSaving(true);
@@ -23,7 +25,7 @@ export function TaskForm({ task, onSubmit, onCancel, submitLabel = 'Create task'
     <div className="form-grid"><label className="field" htmlFor="status"><span className="field__label">Status</span><select id="status" className="input" value={form.status} onChange={(e) => update('status', e.target.value as TaskStatus)}><option value="pending">Pending</option><option value="in-progress">In progress</option><option value="completed">Completed</option></select></label>
       <Input label="Due date" name="dueDate" type="date" value={form.dueDate} onChange={(e) => update('dueDate', e.target.value)} required />
     </div>
-    <Input label="Owner" name="owner" placeholder="Name of the assignee" value={form.owner} onChange={(e) => update('owner', e.target.value)} required maxLength={100} />
+    <label className="field" htmlFor="owner"><span className="field__label">Task owner</span><input id="owner" className="input" value={user?.email ?? ''} readOnly /><small>Tasks are private to your account.</small></label>
     {error && <p className="inline-error" role="alert">{error}</p>}
     <div className="form-actions"><Button type="button" onClick={onCancel}>Cancel</Button><Button type="submit" variant="primary" disabled={saving}>{saving ? 'Saving…' : submitLabel}</Button></div>
   </form>;

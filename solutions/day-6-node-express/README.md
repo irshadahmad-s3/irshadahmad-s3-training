@@ -1,6 +1,6 @@
-# Day 7: PostgreSQL and MongoDB
+# Day 9: Authentication, Authorization and Security
 
-This extends the Day 6 Express API in place. Existing compiled Day 6 files remain under `dist/`; the Day 7 PostgreSQL-backed API source is under `src/` and keeps `/health`, `/hello`, and the `/tasks` response structure.
+This extends the Day 6 Express API in place. Existing compiled Day 6 files remain under `dist/`; the PostgreSQL-backed API source is under `src/`. The API keeps `/health`, `/hello`, task and notes response formats, with task and notes routes now requiring authentication.
 
 ## Requirements and setup
 
@@ -19,20 +19,19 @@ npm run db:seed
 npm start
 ```
 
-The Compose file starts PostgreSQL on port 5432 and MongoDB on port 27017 with persistent named volumes. The checked-in `.env.example` contains local training defaults only. `.env` is ignored by Git; change credentials and update `DATABASE_URL` if you expose services beyond your machine. `MONGODB_URI` and `MONGODB_DATABASE` configure MongoDB. The PostgreSQL pool size can be changed with `PGPOOL_MAX`.
+The Compose file starts PostgreSQL on port 5432 and MongoDB on port 27017 with persistent named volumes. Copy `.env.example` to `.env` and replace `JWT_SECRET` with a random secret of at least 32 characters before starting. `.env` is ignored by Git; never commit real credentials. Set `FRONTEND_ORIGIN` to the frontend origin. `DATABASE_URL`, `MONGODB_URI`, `MONGODB_DATABASE`, and `PGPOOL_MAX` configure database connections and the PostgreSQL pool.
 
-`npm run db:init` applies `db/schema.sql` to create constrained `tasks` and `notes` tables. `npm run db:seed` inserts/refreshes two stable example tasks and notes, so running it again does not duplicate them. `npm start` starts the API on port 3000.
+`npm run db:init` applies the base schema and rerunnable additive migrations. The authentication migration adds a `users` table and nullable task ownership column while retaining existing records. `npm run db:seed` inserts/refreshes two stable example tasks and notes. `npm run db:seed-admin` creates or updates a development admin using `ADMIN_EMAIL` and `ADMIN_PASSWORD` from `.env`. `npm start` starts the API on port 3000.
 
 ## API examples
 
-Task routes preserve the Day 6 JSON envelopes and use parameterized PostgreSQL queries:
+The health endpoints remain public. Tasks and notes require a signed-in account. Obtain a session by registering or logging in; curl examples are in [`assignments/docs/security.md`](../../assignments/docs/security.md).
 
 ```sh
 curl http://localhost:3000/health
-curl http://localhost:3000/tasks
-curl -X POST http://localhost:3000/tasks -H 'Content-Type: application/json' -d '{"title":"Review schema","notes":"Check constraints","status":"pending","dueDate":"2026-12-01","owner":"Irshad"}'
-curl http://localhost:3000/notes/postgres
-curl http://localhost:3000/notes/mongo
+curl http://localhost:3000/health
+curl http://localhost:3000/hello
+curl http://localhost:3000/tasks # returns 401 until signed in
 ```
 
 Notes routes provide equivalent CRUD at `/notes/postgres` and `/notes/mongo`; see [the comparison](../database-comparison/README.md).
@@ -54,6 +53,6 @@ Blog collection design and rerunnable sample data are documented in [mongo/blog/
 
 `npm run db:explain` generates 10,000 task rows, captures actual PostgreSQL `EXPLAIN (ANALYZE, BUFFERS)` output before and after creating an index, and writes it to `solutions/postgres/explain-results.md`. It needs the PostgreSQL service.
 
-`npm test` runs API health/greeting tests and reports database CRUD integration tests as skipped by default. After starting both services and running `npm run db:init`, run `RUN_DB_TESTS=1 npm test` to exercise task CRUD over HTTP against PostgreSQL and Notes CRUD against both databases. Expected baseline: 2 API tests pass and 4 database integration tests skip unless enabled. With both databases running, all 6 tests should pass.
+`npm test` runs API/security tests and skips database integration tests by default. After starting both services and running `npm run db:init`, run `RUN_DB_TESTS=1 npm test` to exercise authentication, ownership, task CRUD, notes CRUD and the SQL lesson against temporary data.
 
 To stop services while retaining data: `docker compose down`. To remove the persistent training databases as well: `docker compose down -v`.
