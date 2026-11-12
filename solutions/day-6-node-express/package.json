@@ -11,7 +11,13 @@
     "db:seed": "node scripts/db-seed.js",
     "db:seed-admin": "node scripts/db-seed-admin.js",
     "db:explain": "node scripts/db-explain.js",
-    "test": "node --test"
+    "db:test:up": "docker compose -p taskflow-test -f docker-compose.test.yml up -d",
+    "db:test:init": "node scripts/db-test-init.js",
+    "db:test:down": "docker compose -p taskflow-test -f docker-compose.test.yml down",
+    "test": "node --test test/api.test.js test/auth.test.js test/database.test.js",
+    "test:unit": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "RUN_DB_TESTS=1 node --test test/api.test.js test/auth.test.js test/database.test.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -27,5 +33,10 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.12",
+    "vite": "^6.4.4",
+    "vitest": "^4.1.12"
   }
 }

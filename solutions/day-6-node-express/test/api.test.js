@@ -1,10 +1,12 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const { once } = require('node:events');
 const { app } = require('../src/app');
 
 test('health endpoint returns the existing response shape', async () => {
-  const server = app.listen(0);
+  const server = app.listen(0, '127.0.0.1');
   try {
+    await once(server, 'listening');
     const response = await fetch(`http://127.0.0.1:${server.address().port}/health`);
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), { status: 'OK' });
@@ -12,8 +14,9 @@ test('health endpoint returns the existing response shape', async () => {
 });
 
 test('hello endpoint uses Guest when name is omitted', async () => {
-  const server = app.listen(0);
+  const server = app.listen(0, '127.0.0.1');
   try {
+    await once(server, 'listening');
     const response = await fetch(`http://127.0.0.1:${server.address().port}/hello`);
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), { message: 'Hello Guest' });
@@ -21,8 +24,9 @@ test('hello endpoint uses Guest when name is omitted', async () => {
 });
 
 test('Swagger documentation remains available', async () => {
-  const server = app.listen(0);
+  const server = app.listen(0, '127.0.0.1');
   try {
+    await once(server, 'listening');
     const response = await fetch(`http://127.0.0.1:${server.address().port}/api-docs/`);
     assert.equal(response.status, 200);
     assert.match(response.headers.get('content-type'), /text\/html/);

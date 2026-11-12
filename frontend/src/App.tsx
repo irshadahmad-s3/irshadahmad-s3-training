@@ -17,5 +17,12 @@ function RequireAuth({ children }: { children: ReactNode }) {
 }
 
 export default function App() {
-  return <BrowserRouter><AuthProvider><TaskProvider><Navbar /><main className="page-shell"><Routes><Route path="/" element={<Navigate to="/tasks" replace />} /><Route path="/login" element={<AuthPage mode="login" />} /><Route path="/register" element={<AuthPage mode="register" />} /><Route path="/tasks" element={<RequireAuth><TaskList /></RequireAuth>} /><Route path="/tasks/:id" element={<RequireAuth><TaskDetails /></RequireAuth>} /><Route path="/admin" element={<RequireAuth><AdminPage /></RequireAuth>} /><Route path="*" element={<NotFound />} /></Routes></main><footer className="footer">Made for focused work <span>✳</span></footer></TaskProvider></AuthProvider></BrowserRouter>;
+  return <BrowserRouter><AuthProvider><TaskProvider><Navbar /><main className="page-shell"><Routes><Route path="/" element={<Navigate to="/tasks" replace />} /><Route path="/login" element={<AuthPage mode="login" />} />
+  <Route path="/register" element={<AuthPage mode="register" />} />
+  <Route path="/tasks" element={<RequireAuth><TaskList />
+  </RequireAuth>} /><Route path="/tasks/:id" element={<RequireAuth><TaskDetails />
+  </RequireAuth>} /><Route path="/admin" element={<RequireAuth><AdminPage />
+  </RequireAuth>} /><Route path="*" element={<NotFound />} /></Routes>
+  </main><footer className="footer">Made for focused work <span>✳</span>
+  </footer></TaskProvider></AuthProvider></BrowserRouter>;
 }

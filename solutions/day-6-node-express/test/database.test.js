@@ -1,6 +1,8 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 if (process.env.RUN_DB_TESTS === '1') process.env.ENABLE_SQL_INJECTION_DEMO ||= 'true';
+const enabled = process.env.RUN_DB_TESTS === '1';
+if (enabled) require('./test-database-config').configureTestDatabases();
 const { pool } = require('../src/db');
 const { mongo } = require('../src/notes');
 const { closeMongo } = require('../src/mongo-db');
@@ -11,7 +13,6 @@ const { app } = require('../src/app');
 const { hashPassword } = require('../src/auth');
 
 // Run with RUN_DB_TESTS=1 after starting both database services and initializing PostgreSQL.
-const enabled = process.env.RUN_DB_TESTS === '1';
 const sample = { title: 'Integration test note', description: 'CRUD verification', status: 'open' };
 after(async () => { await Promise.all([pool.end(), closeMongo()]); });
 
@@ -83,6 +84,26 @@ test('Tasks API reads and writes PostgreSQL records over HTTP', { skip: !enabled
     id = undefined;
   } finally {
     if (id) await pool.query('DELETE FROM tasks WHERE id=$1', [id]);
+    if (client) await pool.query('DELETE FROM users WHERE id=$1', [client.user.id]);
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test('Tasks API rejects invalid task values for an authenticated account', { skip: !enabled }, async () => {
+  const server = app.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const base = `http://127.0.0.1:${server.address().port}`;
+  let client;
+  try {
+    client = await createClient(base);
+    const response = await fetch(`${base}/tasks`, {
+      method: 'POST',
+      headers: { ...client.headers, 'content-type': 'application/json' },
+      body: JSON.stringify({ title: 'Bad status', notes: '', status: 'blocked', dueDate: '2026-12-15', owner: client.email }),
+    });
+    assert.equal(response.status, 400);
+    assert.equal((await response.json()).message, 'Validation failed');
+  } finally {
     if (client) await pool.query('DELETE FROM users WHERE id=$1', [client.user.id]);
     await new Promise((resolve) => server.close(resolve));
   }

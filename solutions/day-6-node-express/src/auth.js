@@ -60,4 +60,7 @@ function requireCsrf(req, res, next) {
   return next();
 }
 
-module.exports = { COOKIE_NAME, authenticate, requireRole, requireCsrf, setSession, cookieOptions, issueToken, assertConfigured, hashPassword: (password) => bcrypt.hash(password, 12), verifyPassword: (password, hash) => bcrypt.compare(password, hash) };
+module.exports = { COOKIE_NAME, authenticate, requireRole, requireCsrf,
+  setSession, cookieOptions, issueToken, assertConfigured,
+  hashPassword: (password) => bcrypt.hash(password, 12), 
+  verifyPassword: (password, hash) => bcrypt.compare(password, hash) };

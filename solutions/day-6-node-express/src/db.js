@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { Pool } = require('pg');
+const { logError } = require('./logger');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -7,6 +8,6 @@ const pool = new Pool({
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
 });
-pool.on('error', (error) => console.error('Unexpected idle PostgreSQL client error:', error.message));
+pool.on('error', (error) => logError('postgres_idle_client_error', error));
 
 module.exports = { pool };

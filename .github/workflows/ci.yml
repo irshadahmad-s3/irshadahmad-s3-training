@@ -1,0 +1,125 @@
+name: TaskFlow CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      simulate_failure:
+        description: Deliberately fail after all checks pass (for red-run demonstration)
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: taskflow_test
+          POSTGRES_PASSWORD: taskflow_test_only
+          POSTGRES_DB: taskflow_test
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U taskflow_test -d taskflow_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27018:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval \"db.adminCommand('ping').ok\""
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            solutions/day-6-node-express/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: solutions/day-6-node-express
+        run: npm ci
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Backend lint (when configured)
+        working-directory: solutions/day-6-node-express
+        run: |
+          if node -e "process.exit(require('./package.json').scripts?.lint ? 0 : 1)"; then
+            npm run lint
+          else
+            echo "No backend lint script is configured."
+          fi
+
+      - name: Frontend lint (when configured)
+        working-directory: frontend
+        run: |
+          if node -e "process.exit(require('./package.json').scripts?.lint ? 0 : 1)"; then
+            npm run lint
+          else
+            echo "No frontend lint script is configured."
+          fi
+
+      - name: Frontend type check
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Backend unit tests
+        working-directory: solutions/day-6-node-express
+        run: npm run test:unit
+
+      - name: Backend HTTP tests
+        working-directory: solutions/day-6-node-express
+        env:
+          JWT_SECRET: taskflow-ci-only-secret-at-least-32-characters
+        run: npm test
+
+      - name: Initialize isolated integration test databases
+        working-directory: solutions/day-6-node-express
+        env:
+          TEST_DATABASE_URL: postgresql://taskflow_test:taskflow_test_only@127.0.0.1:55432/taskflow_test
+          TEST_MONGODB_URI: mongodb://127.0.0.1:27018
+          TEST_MONGODB_DATABASE: taskflow_test
+        run: npm run db:test:init
+
+      - name: Backend database integration tests
+        working-directory: solutions/day-6-node-express
+        env:
+          TEST_DATABASE_URL: postgresql://taskflow_test:taskflow_test_only@127.0.0.1:55432/taskflow_test
+          TEST_MONGODB_URI: mongodb://127.0.0.1:27018
+          TEST_MONGODB_DATABASE: taskflow_test
+        run: npm run test:integration
+
+      - name: Frontend component tests
+        working-directory: frontend
+        run: npm test
+
+      - name: Frontend production build
+        working-directory: frontend
+        run: npm run build
+
+      - name: Deliberately fail after successful checks
+        if: ${{ inputs.simulate_failure }}
+        run: |
+          echo "Deliberate CI red-run demonstration requested."
+          exit 1

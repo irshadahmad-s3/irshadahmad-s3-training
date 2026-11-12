@@ -11,6 +11,7 @@ const rateLimit = require('express-rate-limit');
 const auth = require('./auth');
 const authRepository = require('./auth.repository');
 const { pool } = require('./db');
+const { logError } = require('./logger');
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('../dist/config/swagger').default;
@@ -364,7 +365,7 @@ app.delete('/tasks/:id', auth.authenticate, async (req, res, next) => {
 
 // Centralized Error Handling
 app.use((error, _req, res, _next) => {
-  console.error('Request failed');
+  logError('http_request_failed', error, { method: _req.method, path: _req.path });
 
   res.status(500).json({
     success: false,
