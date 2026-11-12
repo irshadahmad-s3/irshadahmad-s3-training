@@ -14,7 +14,7 @@ const { pool } = require('./db');
 const { logError } = require('./logger');
 
 const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('../dist/config/swagger').default;
+const swaggerSpec = require('./openapi');
 
 const app = express();
 

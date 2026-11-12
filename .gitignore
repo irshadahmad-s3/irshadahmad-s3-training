@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 !.env.production.example
+!solutions/day-6-node-express/.env.test.example
 
 # Local build and dependency output
 node_modules/
