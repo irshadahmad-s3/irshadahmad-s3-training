@@ -239,3 +239,13 @@ GitHub Actions runs backend unit and HTTP tests, database integration tests with
 ## Release and deployment
 
 See [`CHANGELOG.md`](CHANGELOG.md), the [v1.0.0 release checklist](solutions/day-6-node-express/docs/RELEASE_CHECKLIST.md), and the [deployment guide](solutions/day-6-node-express/docs/DEPLOYMENT.md). No deployment, tag, or release is created by this repository documentation.
+
+## CI/CD Verification
+
+GitHub Actions automatically runs the configured tests and checks whenever code is pushed.
+
+| Workflow Run | Status | Link |
+|---|---|---|
+| Initial CI Failure | Red Run ❌ | [View Failed Run](https://github.com/irshadahmad-s3/irshadahmad-s3-training/actions/runs/43216739224) |
+| Successful CI Run | Green Run ✅ | [View Successful Run](https://github.com/irshadahmad-s3/irshadahmad-s3-training/actions/runs/43274061069) |
+
